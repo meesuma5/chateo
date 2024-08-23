@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "523845575062",
+    "project_id": "chateo-72766",
+    "storage_bucket": "chateo-72766.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523845575062:android:02f9dbda4066b94ef2bdb7",
+        "android_client_info": {
+          "package_name": "com.meesum.chateo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "523845575062-itn0mfijchu2c68c346qn9utv2aqem2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR2pCII25R74xIPp1L8yCJcS8OgODPXiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "523845575062-itn0mfijchu2c68c346qn9utv2aqem2u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "523845575062-4cd3u05lsf1su6lrovus8f97p9kcba6l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.meesum.chateo"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

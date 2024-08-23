@@ -1,0 +1,62 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "chateo-72766",
+          "appId": "1:523845575062:android:02f9dbda4066b94ef2bdb7",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "chateo-72766",
+          "appId": "1:523845575062:ios:796f8525090ad8cdf2bdb7",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "chateo-72766",
+          "appId": "1:523845575062:ios:f60a2334ea4a9f86f2bdb7",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "chateo-72766",
+          "configurations": {
+            "android": "1:523845575062:android:02f9dbda4066b94ef2bdb7",
+            "ios": "1:523845575062:ios:796f8525090ad8cdf2bdb7",
+            "macos": "1:523845575062:ios:f60a2334ea4a9f86f2bdb7",
+            "web": "1:523845575062:web:8c6f9b797bf93accf2bdb7"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "singleProjectMode": true,
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}
