@@ -39,9 +39,9 @@ class Chateo extends StatelessWidget {
   initState() {
     _auth.authStateChanges().listen((User? user) {
       if (user == null) {
-        print('User is currently signed out!');
+        logger.i('User is currently signed out!');
       } else {
-        print('User is signed in!');
+        logger.i('User is signed in!');
       }
     });
   }
@@ -61,11 +61,11 @@ class Chateo extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => WelcomeScreen(),
-        '/login': (context) => LoginScreen(),
+        '/login': (context) => const LoginScreen(),
         '/register': (context) => RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
         '/chat': (context) => const ChatScreen(),
-        '/verify': (context) => VerificationScreen(),
+        '/verify': (context) => const VerificationScreen(),
         '/update_details': (context) => const UpdateDetailsScreen(),
         '/profile': (context) => const ProfileScreen(),
       },

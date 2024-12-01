@@ -155,11 +155,11 @@ class BottomNavigationBarState extends State<BottomNavigationBar> {
                     onPressed: () {
                       showDialog(
                           context: context,
-                          builder: (context) => Dialog(
+                          builder: (context) => const Dialog(
                                   child: AspectRatio(
                                 aspectRatio: 4 / 5,
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
+                                  padding: EdgeInsets.symmetric(
                                       vertical: 12.0),
                                   child: ContactScreen(),
                                 ),

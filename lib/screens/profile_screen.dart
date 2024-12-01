@@ -190,15 +190,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 class _PButton extends StatelessWidget {
-  const _PButton(
+  _PButton(
       {required this.onPressed,
       required this.icon,
-      this.iconColor = AppColors.textFaded,
-      required this.text});
+      required this.text,
+      this.iconColor});
   final VoidCallback onPressed;
   final IconData icon;
-  final Color? iconColor;
+  Color? iconColor;
   final String text;
+
+  initState() {
+    iconColor ??= AppColors.textFaded.withOpacity(0.6);
+  }
 
   @override
   Widget build(BuildContext context) {

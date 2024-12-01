@@ -1,7 +1,8 @@
 import 'package:Chateo/helpers/helpers.dart';
+import 'package:Chateo/theme.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
-
-import '../models/models.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 import '../widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,23 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Avatar.medium(
                   imageUrl: getChannelImage(channel, context.user!)),
             ),
-            title: Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      getChannelName(channel, context.user!),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w900),
-                    ),
-                    // getStatus(channel, context.user!),
-                  ],
-                ),
-              ],
-            ),
+            title: _AppBarTitle(channel: channel),
             actions: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -68,6 +53,211 @@ class _ChatScreenState extends State<ChatScreen> {
   // Widget getStatus(Channel channel, User user){
   // 	BetterStreamBuilder<List<Member>>()
   // }
+}
+
+class _AppBarTitle extends StatelessWidget {
+  const _AppBarTitle({
+    super.key,
+    required this.channel,
+  });
+
+  final Channel channel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              getChannelName(channel, context.user!),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            // getStatus(channel, context.user!),
+            BetterStreamBuilder<List<Member>>(
+              stream: channel.state!.membersStream,
+              initialData: channel.state!.members,
+              builder: (context, data) => ConnectionStatusBuilder(
+                statusBuilder: (context, status) {
+                  switch (status) {
+                    case ConnectionStatus.connected:
+                      return _buildConnectedTitleState(context, data);
+                    case ConnectionStatus.connecting:
+                      return Text(
+                        'Connecting',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                      );
+                    case ConnectionStatus.disconnected:
+                      return Text(
+                        'Offline',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.errorColor,
+                            ),
+                      );
+                    default:
+                      return const SizedBox.shrink();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConnectedTitleState(
+    BuildContext context,
+    List<Member>? members,
+  ) {
+    Widget? alternativeWidget;
+    final channel = StreamChannel.of(context).channel;
+    final memberCount = channel.memberCount;
+    if (memberCount != null && memberCount > 2) {
+      var text = 'Members: $memberCount';
+      final watcherCount = channel.state?.watcherCount ?? 0;
+      if (watcherCount > 0) {
+        text = 'watchers $watcherCount';
+      }
+      alternativeWidget = Text(
+        text,
+      );
+    } else {
+      final userId = StreamChatCore.of(context).currentUser?.id;
+      final otherMember = members?.firstWhereOrNull(
+        (element) => element.userId != userId,
+      );
+
+      if (otherMember != null) {
+        if (otherMember.user?.online == true) {
+          alternativeWidget = Text(
+            'Online',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).primaryColor,
+                ),
+          );
+        } else {
+          late final String time;
+          try {
+            time = Jiffy.parseFromDateTime(otherMember.user!.lastActive!)
+                .fromNow();
+          } catch (e) {
+            time = 'Long Time Ago';
+            logger.e(e);
+          }
+          alternativeWidget = Text(
+            'Last online: '
+            '$time',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).primaryColorDark,
+                ),
+          );
+        }
+      }
+    }
+
+    return TypingIndicator(
+      alternativeWidget: alternativeWidget,
+    );
+  }
+}
+
+class ConnectionStatusBuilder extends StatelessWidget {
+  /// Creates a new ConnectionStatusBuilder
+  const ConnectionStatusBuilder({
+    Key? key,
+    required this.statusBuilder,
+    this.connectionStatusStream,
+    this.errorBuilder,
+    this.loadingBuilder,
+  }) : super(key: key);
+
+  /// The asynchronous computation to which this builder is currently connected.
+  final Stream<ConnectionStatus>? connectionStatusStream;
+
+  /// The builder that will be used in case of error
+  final Widget Function(BuildContext context, Object? error)? errorBuilder;
+
+  /// The builder that will be used in case of loading
+  final WidgetBuilder? loadingBuilder;
+
+  /// The builder that will be used in case of data
+  final Widget Function(BuildContext context, ConnectionStatus status)
+      statusBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = connectionStatusStream ??
+        StreamChatCore.of(context).client.wsConnectionStatusStream;
+    final client = StreamChatCore.of(context).client;
+    return BetterStreamBuilder<ConnectionStatus>(
+      initialData: client.wsConnectionStatus,
+      stream: stream,
+      noDataBuilder: loadingBuilder,
+      errorBuilder: (context, error) {
+        if (errorBuilder != null) {
+          return errorBuilder!(context, error);
+        }
+        return const Offstage();
+      },
+      builder: statusBuilder,
+    );
+  }
+}
+
+class TypingIndicator extends StatelessWidget {
+  /// Instantiate a new TypingIndicator
+  const TypingIndicator({
+    super.key,
+    this.alternativeWidget,
+  });
+
+  /// Widget built when no typings is happening
+  final Widget? alternativeWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    final channelState = StreamChannel.of(context).channel.state!;
+
+    final altWidget = alternativeWidget ?? const SizedBox.shrink();
+
+    return BetterStreamBuilder<Iterable<User>>(
+      initialData: channelState.typingEvents.keys,
+      stream: channelState.typingEventsStream
+          .map((typings) => typings.entries.map((e) => e.key)),
+      builder: (context, data) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: data.isNotEmpty == true
+                ? Align(
+                    alignment: Alignment.centerLeft,
+                    key: ValueKey('typing-text'),
+                    child: Text(
+                      'Typing message',
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                    ),
+                  )
+                : Align(
+                    alignment: Alignment.centerLeft,
+                    key: const ValueKey('altwidget'),
+                    child: altWidget,
+                  ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _MessageList extends StatefulWidget {
@@ -213,7 +403,7 @@ class _ActionBarState extends State<_ActionBar> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: IconButton2(
                       onPressed: () {
-                        print('Camera');
+                        logger.i('Camera');
                       },
                       icon: CupertinoIcons.camera_fill),
                 ),
@@ -228,7 +418,8 @@ class _ActionBarState extends State<_ActionBar> {
                       decoration: BoxDecoration(
                           color:
                               Theme.of(context).primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.all(Radius.circular(24))),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(24))),
                       child: TextField(
                         textAlign: TextAlign.left,
                         decoration: InputDecoration(
